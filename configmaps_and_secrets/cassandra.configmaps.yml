@@ -1,0 +1,55 @@
+# ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: db-settings
+  labels:
+    map: db-settings
+data: # Config map's data go here
+  db: cassandra-internal
+  db-host: "127.0.0.1"
+  db-port: "9042"
+  db-keyspace: "dfp_ife_keyspace"
+
+---
+# Deployment that uses the ConfigMap
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adk-cassandra
+spec:
+  selector:
+    matchLabels:
+      app: adk-cassandra
+  template:
+    metadata:
+      labels:
+        app: adk-cassandra
+        map: db-settings
+    spec:
+      containers:
+        - name: adk-cassandra
+          image: cassandra
+          ports:
+            - containerPort: 9042
+          env:
+            - name: CASSANDRA_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: db-settings
+                  key: db-host
+
+---
+# Service to expose the Cassandra service - Not able to connect to pod, check why
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   labels:
+#     app: adk-cassandra
+#   name: cassandra
+# spec:
+#   clusterIP: None
+#   ports:
+#     - port: 9042
+#   selector:
+#     app: cassandra

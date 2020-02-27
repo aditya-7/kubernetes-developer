@@ -1,0 +1,40 @@
+# ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: db-settings
+  labels:
+    app: db-settings
+data: # Config map's data go here
+  db: cassandra-internal
+  db.host: "cassandra-host"
+  db.port: "9042"
+  db.keyspace: "dfp_ife_keyspace"
+
+---
+# Deployment that uses the ConfigMap
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adk-cassandra
+spec:
+  selector:
+    matchLabels:
+      app: adk-cassandra
+  template:
+    metadata:
+      labels:
+        app: adk-cassandra
+    spec:
+      volumes:
+        - name: db-configmap-vol # The configmap will be mounted on the container
+          configMap:
+            name: db-settings
+      containers:
+        - name: adk-cassandra
+          image: cassandra
+          ports:
+            - containerPort: 9042
+          volumeMounts: # The configmap volume db-configmap-vol will be mounted on the container on /mnt/config
+            - name: db-configmap-vol
+              mountPath: /mnt/config
