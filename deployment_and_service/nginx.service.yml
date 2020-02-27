@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service # Defaults to ClusterIP service
+metadata:
+  name: nginx # Each service gets a DNS entry, can be accessed as nginx:80 by other kubernet resources
+  labels:
+    app: adk-nginx
+spec:
+  selector:
+    app: adk-nginx # Services will apply to resources with the label app: nginx
+  ports:
+    - name: http
+      port: 80 # Service port
+      targetPort: 80 # Container target port

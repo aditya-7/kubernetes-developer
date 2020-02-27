@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adk-nginx
+  labels:
+    app: adk-nginx
+    tier: frontend
+spec:
+  replicas: 2
+  minReadySeconds: 10 # Wait for 10 seconds before accepting requests
+  selector: # The selector is used to select the template by matching labels in template's metadata
+    matchLabels:
+      tier: frontend
+  template: # Template of Pods/ Containers to run using the deployment
+    metadata:
+      labels:
+        app: adk-nginx
+        tier: frontend
+    spec:
+      containers:
+        - name: adk-nginx
+          image: nginx:alpine
+          ports:
+            - containerPort: 80
+          resources: # Constrain how much a container can run within the pod
+            limits:
+              memory: "128Mi" # Max 128 MB
+              cpu: "200m" # Max 200 milliCPU (20% of CPU)

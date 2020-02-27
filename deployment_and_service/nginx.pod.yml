@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: adk-nginx
+  labels:
+    app: nginx
+    rel: stable
+spec:
+  containers:
+    - name: adk-nginx
+      image: nginx:alpine
+      livenessProbe:
+        httpGet: # Type of Liveness probe: HTTP GET
+          path: /index.html # Create a health check endpoint
+          port: 80 # Check index.html on port 80
+        initialDelaySeconds: 15 # Wait 15 seconds for the container and probe to be ready first time
+        timeoutSeconds: 2 # Timeout after 2 seconds
+        periodSeconds: 5 # Check every 5 seconds
+        failureThreshold: 1 # Fail the pod after 1 failure
+      readinessProbe:
+        httpGet: # Type of Readiness probe
+          path: /index.html
+          port: 80 # Check index.html on port 80
+        initialDelaySeconds: 2 # Initially wait for 2 seconds before starting the Readiness probe
+        periodSeconds: 5 # Check every 5 seconds thereafter
+      ports:
+        - containerPort: 80
+      resources:

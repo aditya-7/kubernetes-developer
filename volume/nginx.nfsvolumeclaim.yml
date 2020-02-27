@@ -1,0 +1,65 @@
+# Storage class
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: nfs-storage-class
+reclaimPolicy: Retain
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+
+---
+# Persistent Volume
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-pv
+spec:
+  capacity:
+    storage: 10Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+    - ReadOnlyMany
+  persistentVolumeReclaimPolicy: Retain
+  nfs:
+    path: /mnt/files
+    server: 10.9.41.242
+  storageClassName: nfs-storage-class
+
+---
+# Persistent Volume Claim
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs-pvc
+spec:
+  storageClassName: nfs-storage-class
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+# Pod using Persistent Volume Claim
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nfs-pvc-pod
+  labels:
+    name: storage
+spec:
+  containers:
+    - image: nginx
+      name: nfs-pod
+      command:
+        - /bin/sh
+        - -c
+        - while true; do echo "date" >> /mnt/files/outfile; sleep 10; done
+      volumeMounts:
+        - name: nfs-pvc
+          mountPath: /mnt/files
+  volumes:
+    - name: nfs-pvc
+      persistentVolumeClaim:
+        claimName: nfs-pvc

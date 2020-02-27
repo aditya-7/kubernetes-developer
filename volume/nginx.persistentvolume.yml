@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: adk-pv
+spec:
+  capacity:
+    storage: 10Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce # One client can mount for read/ write
+    - ReadOnlyMany # Many clients can mount for reading
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: adk-storage-class
+  local:
+    path: /home/ubuntu/Desktop/Projects/DeltaAirlines/learn/k8s
+  nodeAffinity: # Which node in the cluster does the local path exists in
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - imsez-d0246ubuntu

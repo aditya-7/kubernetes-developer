@@ -1,0 +1,7 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: adk-storage-class
+reclaimPolicy: Retain
+provisioner: kubernetes.io/no-provisioner # Will not be dynamically provisioned
+volumeBindingMode: WaitForFirstConsumer # Wait till the pod is created to provision the storage

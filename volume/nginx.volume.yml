@@ -1,0 +1,29 @@
+# Type of volume: emptyDir
+apiVersion: v1
+kind: Pod
+metadata:
+  name: adk-nginx
+  labels:
+    app: nginx
+    rel: stable
+spec:
+  volumes:
+    - name: html
+      emptyDir: {} # Containers within Pod share data through this directory
+  containers:
+    - name: adk-nginx
+      image: nginx:alpine
+      volumeMounts:
+        - name: html # Reference to the volume 'html'
+          mountPath: /usr/share/nginx/html # Location in container where html is to be mounted
+          readOnly: true
+      ports:
+        - containerPort: 80
+    - name: html-updater
+      image: alpine
+      command: ["/bin/sh", "-c"]
+      args:
+        - "while true; do date >> /html/index.html; sleep 10; done"
+      volumeMounts:
+        - name: html
+          mountPath: /html

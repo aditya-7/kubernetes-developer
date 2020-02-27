@@ -1,0 +1,32 @@
+# Type of volume: emptyDir
+apiVersion: v1
+kind: Pod
+metadata:
+  name: adk-nginx
+  labels:
+    app: nginx
+    rel: stable
+spec:
+  volumes:
+    - name: docker-socket
+      hostPath: # Will let us mount to a volume on the host node
+        path: /var/run/docker.sock
+        type: Socket
+    - name: k8s
+      hostPath:
+        path: /home/ubuntu/Desktop/Projects/DeltaAirlines/learn/k8s
+        type: Directory # Other types are: DirectoryOrCreate, FileOrCreate, File, CharDevice, BlockDevice
+  containers:
+    - name: docker-socket
+      image: docker
+      command: ["sleep"]
+      args: ["10000"]
+      volumeMounts:
+        - name: docker-socket # Reference docker-socket  volume
+          mountPath: /var/run/docker.sock # Location in container where it needs be mounted
+          readOnly: true
+        - name: k8s
+          mountPath: /mnt/k8s
+          readOnly: true
+      ports:
+        - containerPort: 80
