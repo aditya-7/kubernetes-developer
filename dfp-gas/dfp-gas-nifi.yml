@@ -1,0 +1,53 @@
+# Deployment dfp-nifi
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dfp-nifi
+  labels:
+    app: dfp-nifi
+    tier: backend
+spec:
+  replicas: 1
+  minReadySeconds: 10
+  selector:
+    matchLabels:
+      app: dfp-nifi
+  template:
+    metadata:
+      labels:
+        app: dfp-nifi
+        tier: backend
+    spec:
+      volumes:
+        - name: gas-files-pvc
+          persistentVolumeClaim:
+            claimName: gas-files-pvc
+      containers:
+        - name: dfp-nifi
+          image: 10.9.41.242:5000/dfp-nifi:1.1.1
+          volumeMounts:
+            - name: gas-files-pvc
+              mountPath: /mnt/files
+          ports:
+            - containerPort: 8080
+          resources:
+            limits:
+              cpu: "500m"
+              memory: 1Gi
+
+---
+# Service to expose Ground Services
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: dfp-nifi
+  name: dfp-nifi
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 31001
+  selector:
+    app: dfp-nifi

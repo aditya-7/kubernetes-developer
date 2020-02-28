@@ -1,0 +1,95 @@
+# Storage class
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: gas-files-storage-class
+reclaimPolicy: Retain
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+
+---
+# Persistent Volume
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: gas-files-pv
+spec:
+  capacity:
+    storage: 10Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  nfs:
+    path: /mnt/files/
+    server: 10.9.41.242
+  storageClassName: gas-files-storage-class
+
+---
+# Persistent Volume Claim
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gas-files-pvc
+spec:
+  storageClassName: gas-files-storage-class
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+# Deployment dfp-ground-services
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dfp-ground-services
+  labels:
+    app: dfp-ground-services
+    tier: backend
+spec:
+  replicas: 1
+  minReadySeconds: 10
+  selector:
+    matchLabels:
+      app: dfp-ground-services
+  template:
+    metadata:
+      labels:
+        app: dfp-ground-services
+        tier: backend
+    spec:
+      volumes:
+        - name: gas-files-pvc
+          persistentVolumeClaim:
+            claimName: gas-files-pvc
+      containers:
+        - name: dfp-ground-services
+          image: 10.9.41.242:5000/dfp-ground-services:1.2.0
+          volumeMounts:
+            - name: gas-files-pvc
+              mountPath: /mnt/files
+          ports:
+            - containerPort: 3000
+          resources:
+            limits:
+              cpu: "200m"
+              memory: 256Mi
+
+---
+# Service to expose Ground Services
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: dfp-ground-services
+  name: dfp-ground-services
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 3000
+      targetPort: 3000
+      nodePort: 31000
+  selector:
+    app: dfp-ground-services
