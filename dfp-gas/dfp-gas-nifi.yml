@@ -36,7 +36,7 @@ spec:
               memory: 1Gi
 
 ---
-# Service to expose Ground Services
+# Service to expose NiFi service
 apiVersion: v1
 kind: Service
 metadata:
