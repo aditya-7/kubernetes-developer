@@ -23,6 +23,6 @@ spec:
           ports:
             - containerPort: 80
           resources: # Constrain how much a container can run within the pod
-            limits:
+            limits:  # 'limits' limits the resources provisioned for the pod; 'request' guarantees the pods get the resources defined
               memory: "128Mi" # Max 128 MB
               cpu: "200m" # Max 200 milliCPU (20% of CPU)
