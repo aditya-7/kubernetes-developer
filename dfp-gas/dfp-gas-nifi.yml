@@ -1,33 +1,80 @@
-# Deployment dfp-nifi
+# Storage class
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: gas-state-storage-class
+reclaimPolicy: Retain
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+
+---
+# Persistent Volume
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: gas-state-pv
+spec:
+  capacity:
+    storage: 10Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  nfs:
+    path: /mnt/nifi-state/
+    server: 10.9.41.242
+  storageClassName: gas-state-storage-class
+
+---
+# Persistent Volume Claim
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gas-state-pvc
+spec:
+  storageClassName: gas-state-storage-class
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+# Deployment dfp-workflow-manager
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: dfp-nifi
+  name: dfp-workflow-manager
   labels:
-    app: dfp-nifi
+    app: dfp-workflow-manager
     tier: backend
 spec:
   replicas: 1
   minReadySeconds: 10
   selector:
     matchLabels:
-      app: dfp-nifi
+      app: dfp-workflow-manager
   template:
     metadata:
       labels:
-        app: dfp-nifi
+        app: dfp-workflow-manager
         tier: backend
     spec:
       volumes:
         - name: gas-files-pvc
           persistentVolumeClaim:
             claimName: gas-files-pvc
+        - name: gas-state-pvc
+          persistentVolumeClaim:
+            claimName: gas-state-pvc
       containers:
-        - name: dfp-nifi
-          image: 10.9.41.242:5000/dfp-nifi:1.1.1
+        - name: dfp-workflow-manager
+          image: 10.9.41.242:5000/gas-workflow-mgr:1.0.0-snapshot
           volumeMounts:
             - name: gas-files-pvc
               mountPath: /mnt/files
+            - name: gas-state-pvc
+              mountPath: /mnt/nifi
           ports:
             - containerPort: 8080
           resources:
@@ -41,8 +88,8 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: dfp-nifi
-  name: dfp-nifi
+    app: dfp-workflow-manager
+  name: dfp-workflow-manager
 spec:
   type: LoadBalancer
   ports:
@@ -50,4 +97,4 @@ spec:
       targetPort: 8080
       nodePort: 31001
   selector:
-    app: dfp-nifi
+    app: dfp-workflow-manager

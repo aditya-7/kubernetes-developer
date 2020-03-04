@@ -9,5 +9,3 @@ spec:
   externalName: "www.google.com" # This will be proxied by nginx-external-name within the cluster
   selector:
     app: adk-nginx
-  ports:
-    - port: 9000

@@ -34,7 +34,7 @@ metadata:
 spec:
   storageClassName: gas-files-storage-class
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   resources:
     requests:
       storage: 5Gi
@@ -66,7 +66,7 @@ spec:
             claimName: gas-files-pvc
       containers:
         - name: dfp-ground-services
-          image: 10.9.41.242:5000/dfp-ground-services:1.2.0
+          image: 10.9.41.242:5000/dfp-ground-services:1.2.0.1
           volumeMounts:
             - name: gas-files-pvc
               mountPath: /mnt/files

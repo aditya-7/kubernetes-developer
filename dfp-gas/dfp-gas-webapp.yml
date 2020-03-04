@@ -1,0 +1,46 @@
+# Deployment dfp-webapp
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dfp-webapp
+  labels:
+    app: dfp-webapp
+    tier: frontend
+spec:
+  replicas: 1
+  minReadySeconds: 10
+  selector:
+    matchLabels:
+      app: dfp-webapp
+  template:
+    metadata:
+      labels:
+        app: dfp-webapp
+        tier: frontend
+    spec:
+      containers:
+        - name: dfp-webapp
+          image: 10.9.41.242:5000/dfp-webapp:1.3.3-snapshot
+          ports:
+            - containerPort: 9000
+          resources:
+            limits:
+              cpu: "200m"
+              memory: 256Mi
+
+---
+# Service to expose Web app
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: dfp-webapp
+  name: dfp-webapp
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 9000
+      targetPort: 9000
+      nodePort: 31002
+  selector:
+    app: dfp-webapp
