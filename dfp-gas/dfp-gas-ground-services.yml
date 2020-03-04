@@ -74,8 +74,11 @@ spec:
             - containerPort: 3000
           resources:
             limits:
-              cpu: "200m"
-              memory: 256Mi
+              cpu: "600m"
+              memory: 1Gi
+            requests:
+              cpu: "400m"
+              memory: 512Mi
 
 ---
 # Service to expose Ground Services
